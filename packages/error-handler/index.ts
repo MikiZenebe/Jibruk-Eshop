@@ -29,16 +29,16 @@ export function isAppError(error: unknown): error is AppError {
   );
 }
 
-export const notFoundError = (message = "Resource not found") =>
+export const NotFoundError = (message = "Resource not found") =>
   createAppError(message, 404);
 
-export const validationError = (
+export const ValidationError = (
   message = "Invalid request data",
   details?: unknown
 ) => createAppError(message, 400, details);
 
-export const authError = (message = "Unauthorized") =>
+export const AuthError = (message = "Unauthorized") =>
   createAppError(message, 401);
 
-export const forbiddenError = (message = "Forbidden access") =>
+export const ForbiddenError = (message = "Forbidden access") =>
   createAppError(message, 403);
