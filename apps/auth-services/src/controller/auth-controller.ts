@@ -5,8 +5,9 @@ import {
   trackOtpRequest,
   validateRegistrationData,
 } from "../utils/auth-helper";
-import prisma from "../../../../packages/libs/prisma";
+
 import { ValidationError } from "../../../../packages/error-handler";
+import prisma from "../../../../packages/libs/prisma";
 
 // Register new user
 export const userRegistration = async (
@@ -19,7 +20,7 @@ export const userRegistration = async (
     const { name, email } = req.body;
 
     const existingUser = await prisma.user.findUnique({
-      where: email,
+      where: { email },
     });
 
     if (existingUser) {
