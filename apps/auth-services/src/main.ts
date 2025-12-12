@@ -11,7 +11,7 @@ const app = express();
 app.use(
   cors({
     origin: ["http://localhost:3000"],
-    allowedHeaders: ["Authorization", "Content-Type"],
+    allowedHeaders: ["Authorization", "Content-Type", "Accept"],
   })
 );
 app.use(express.json());
@@ -34,7 +34,7 @@ app.use(errorMiddleware);
 const port = process.env.PORT || 6001;
 const server = app.listen(port, () => {
   console.log(`Auth services is running at http://localhost:${port}/api`);
-  console.log(`Swagger Docs Avaliale at http://localhost${port}/docs-json`);
+  console.log(`Swagger Docs Avaliale at http://localhost:${port}/docs`);
 });
 
 server.on("error", (err) => {
