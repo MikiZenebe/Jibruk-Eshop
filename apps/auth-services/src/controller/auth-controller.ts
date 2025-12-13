@@ -9,7 +9,8 @@ import {
   verifyOtp,
 } from "../utils/auth-helper";
 import prisma from "@packages/libs/prisma";
-import { ValidationError } from "@packages/error-handler";
+import { AuthError, ValidationError } from "@packages/error-handler";
+import { setCookie } from "../utils/cookies/setCookies";
 
 // Register new user
 export const userRegistration = async (
@@ -72,4 +73,52 @@ export const verifyUser = async (
       message: "User registerd successfully!",
     });
   } catch (error) {}
+};
+
+// Login to user
+export const loginUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return next(ValidationError("Email and Password are required"));
+    }
+
+    const user = await prisma.users.findUnique({ where: { email } });
+
+    if (!user) return next(AuthError("User dosen't exists!"));
+
+    // verify password
+    const isMatch = await bcrypt.compare(password, user.password!);
+    if (!isMatch) {
+      return next(ValidationError("Invalid email or passowrd"));
+    }
+
+    // Generate access and refersh token
+    const accessToken = jwt.sign(
+      { id: user.id, role: "user" },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      { expiresIn: "15m" }
+    );
+    const refershToken = jwt.sign(
+      { id: user.id, role: "user" },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      { expiresIn: "7d" }
+    );
+
+    // store the refresh and access token in an httpOnly secure token
+    setCookie(res, "refershToken", refershToken);
+    setCookie(res, "accessToken", accessToken);
+
+    res.status(200).json({
+      message: "Login successfull",
+      user: { i: user.id, email: user.email, name: user.name },
+    });
+  } catch (error) {
+    return next(error);
+  }
 };
