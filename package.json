@@ -11,6 +11,7 @@
   "dependencies": {
     "@prisma/client": "6.19",
     "@tailwindcss/postcss": "^4.1.18",
+    "@tanstack/react-query": "^5.90.12",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
@@ -28,6 +29,7 @@
     "nodemailer": "^7.0.11",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.68.0",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
     "tailwindcss": "^4.1.18",
