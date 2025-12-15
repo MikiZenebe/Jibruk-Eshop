@@ -2,7 +2,14 @@
 
 import { navItems } from "apps/user-ui/src/configs/constants";
 import { NavItemsTypes } from "apps/user-ui/src/configs/global";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Heart,
+  Search,
+  ShoppingCart,
+  UserRound,
+} from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -16,7 +23,7 @@ export default function HeaderBottom() {
   // Track scroll position
   useEffect(() => {
     const handleScroll = () => {
-      if (window.screenY > 100) {
+      if (window.scrollY > 100) {
         setIsSticky(true);
       } else {
         setIsSticky(false);
@@ -43,7 +50,9 @@ export default function HeaderBottom() {
   return (
     <div
       className={` transition-all duration-300 px-40 w-full  ${
-        isSticky ? "fixed top left-0 z-100 bg-white shadow-lg" : "relative"
+        isSticky
+          ? "fixed top-0 left-0 z-100 bg-white border-b! border-gray-300!"
+          : "relative"
       }`}
     >
       <div
@@ -104,7 +113,7 @@ export default function HeaderBottom() {
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-end">
+        <div className={`flex items-center  justify-end`}>
           {navItems.map((i: NavItemsTypes, index: number) => (
             <Link
               href={i.href}
@@ -114,6 +123,44 @@ export default function HeaderBottom() {
               {i.title}
             </Link>
           ))}
+        </div>
+
+        <div>
+          {isSticky && (
+            <div className="flex items-center gap-6 py-3">
+              <div className="flex items-center gap-5">
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="#"
+                    className="border-2! w-[45px] h-[45px] flex items-center justify-center rounded-full border-gray-400!"
+                  >
+                    <UserRound size={25} className="text-gray-600" />
+                  </Link>
+                </div>
+
+                <Link href="/login">
+                  <span className="block font-medium">Hello,</span>
+                  <span className=" font-semibold">Sign In</span>
+                </Link>
+              </div>
+
+              <div className="flex items-center gap-5">
+                <Link href="/wishlist" className="relative">
+                  <Heart size={30} className="text-gray-600" />
+                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center border-2 border-white">
+                    0
+                  </div>
+                </Link>
+
+                <Link href="/cart" className="relative">
+                  <ShoppingCart size={30} className="text-gray-600" />
+                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center border-2 border-white">
+                    0
+                  </div>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
