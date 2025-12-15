@@ -1,11 +1,12 @@
 import Link from "next/link";
 import React from "react";
 import { Heart, Search, ShoppingCart, UserRound } from "lucide-react";
+import HeaderBottom from "./HeaderBottom";
 
 export default function Header() {
   return (
     <div>
-      <nav className="rounded-lg overflow-hidden p-5 bg-white  mx-auto w-full max-w-screen-xl">
+      <div className="rounded-lg overflow-hidden p-5 bg-white  mx-auto w-full px-40">
         <div className="flex items-center gap-6">
           <Link
             href="/"
@@ -59,7 +60,11 @@ export default function Header() {
             </Link>
           </div>
         </div>
-      </nav>
+      </div>
+
+      <div className="border-t! border-gray-300!">
+        <HeaderBottom />
+      </div>
     </div>
   );
 }
