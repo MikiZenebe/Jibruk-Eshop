@@ -1,7 +1,18 @@
 "use client";
 
+import { useMutation } from "@tanstack/react-query";
 import GoogleButton from "apps/user-ui/src/shared/components/google-button";
-import { Check, CircleCheck, CircleX, Eye, EyeOff, LogIn } from "lucide-react";
+import { BASE_URL } from "apps/user-ui/src/shared/utils/base-url";
+import axios, { AxiosError } from "axios";
+import {
+  Check,
+  CircleCheck,
+  CircleX,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  LogIn,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -24,7 +35,33 @@ export default function Login() {
     formState: { errors },
   } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {};
+  const loginMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await axios.post(`${BASE_URL}/api/login-user`, data, {
+        withCredentials: true,
+      });
+
+      return response.data;
+    },
+
+    onSuccess: (data) => {
+      setServerError(null);
+      router.push("/");
+    },
+    onError: (error: AxiosError) => {
+      const errorMSg =
+        (error.response?.data as { message?: string })?.message ||
+        "Invalid Credentials!";
+      setServerError(errorMSg);
+      console.log(errorMSg);
+    },
+  });
+
+  const { isPending } = loginMutation;
+
+  const onSubmit = (data: FormData) => {
+    loginMutation.mutate(data);
+  };
 
   return (
     <div className="w-full py-10 min-h-[85vh] bg-gray-100">
@@ -159,8 +196,16 @@ export default function Login() {
               <button
                 type="submit"
                 className="w-full px-4 py-3 inline-flex items-center justify-center border align-middle select-none font-sans font-medium text-center duration-300 ease-in disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed focus:shadow-none text-sm  shadow-sm hover:shadow-md bg-stone-800 hover:bg-stone-700 relative bg-gradient-to-b from-stone-700 to-stone-800 border-stone-900 text-stone-50 rounded-lg hover:bg-gradient-to-b hover:from-stone-600 hover:to-stone-600 hover:border-stone-700 after:absolute after:inset-0 after:rounded-[inherit] after:box-shadow after:shadow-[inset_0_1px_0px_rgba(255,255,255,0.25),inset_0_-2px_0px_#00000059] after:pointer-events-none transition antialiased cursor-pointer"
+                disabled={isPending}
               >
-                Login
+                {isPending ? (
+                  <span className="flex items-center gap-2">
+                    <LoaderCircle size={18} className="animate-spin" />
+                    Logging up...
+                  </span>
+                ) : (
+                  "Login"
+                )}
               </button>
 
               {serverError && (

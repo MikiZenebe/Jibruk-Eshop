@@ -1,11 +1,14 @@
 "use client";
 
+import { useMutation } from "@tanstack/react-query";
 import GoogleButton from "apps/user-ui/src/shared/components/google-button";
-import { CircleX, Eye, EyeOff, LogIn } from "lucide-react";
+import { CircleX, Eye, EyeOff, LoaderCircle, LogIn } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import axios, { AxiosError } from "axios";
+import { BASE_URL } from "apps/user-ui/src/shared/utils/base-url";
 
 interface FormData {
   name: string;
@@ -15,8 +18,7 @@ interface FormData {
 
 export default function Signup() {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [showOtp, setShowOtp] = useState(true);
+  const [showOtp, setShowOtp] = useState(false);
   const [canResend, setCanResend] = useState(true);
   const [timer, setTimer] = useState(60);
   const [otp, setOtp] = useState(["", "", "", ""]);
@@ -31,7 +33,64 @@ export default function Signup() {
     formState: { errors },
   } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {};
+  const startResendTimer = () => {
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setCanResend(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const signupMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await axios.post(
+        `${BASE_URL}/api/user-registration`,
+        data
+      );
+
+      return response.data;
+    },
+
+    onSuccess: (_, formData) => {
+      setUserData(formData);
+      setShowOtp(true);
+      setCanResend(false);
+      setTimer(60);
+      startResendTimer();
+    },
+  });
+
+  const verifyOtpMutation = useMutation({
+    mutationFn: async () => {
+      if (!userData) return;
+      const response = await axios.post(`${BASE_URL}/api/verify-user`, {
+        ...userData,
+        otp: otp.join(""),
+      });
+
+      return response.data;
+    },
+
+    onSuccess: () => {
+      router.push("/login");
+    },
+  });
+
+  const { isPending } = signupMutation;
+  const {
+    isPending: isVerifyOtpPending,
+    isError: isVerifyOtpIsError,
+    error: isVerifyOtpError,
+  } = verifyOtpMutation;
+
+  const onSubmit = (data: FormData) => {
+    signupMutation.mutate(data);
+  };
 
   const handleOtpChange = (index: number, value: string) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -187,21 +246,17 @@ export default function Signup() {
                 <button
                   type="submit"
                   className="w-full px-4 py-3 inline-flex items-center justify-center border align-middle select-none font-sans font-medium text-center duration-300 ease-in disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed focus:shadow-none text-sm  shadow-sm hover:shadow-md bg-stone-800 hover:bg-stone-700 relative bg-gradient-to-b from-stone-700 to-stone-800 border-stone-900 text-stone-50 rounded-lg hover:bg-gradient-to-b hover:from-stone-600 hover:to-stone-600 hover:border-stone-700 after:absolute after:inset-0 after:rounded-[inherit] after:box-shadow after:shadow-[inset_0_1px_0px_rgba(255,255,255,0.25),inset_0_-2px_0px_#00000059] after:pointer-events-none transition antialiased cursor-pointer"
+                  disabled={isPending}
                 >
-                  Signup
+                  {isPending ? (
+                    <span className="flex items-center gap-2">
+                      <LoaderCircle size={18} className="animate-spin" />
+                      Signing up...
+                    </span>
+                  ) : (
+                    "Signup"
+                  )}
                 </button>
-
-                {serverError && (
-                  <div
-                    role="alert"
-                    className="my-2 relative flex items-start w-full border p-2 rounded-none border-b-0 border-l-4 border-r-0 border-t-0 border-red-500 bg-red-500/10 font-medium text-red-500"
-                  >
-                    <CircleX />
-                    <div className="w-full text-sm font-sans leading-none m-1.5">
-                      {serverError}
-                    </div>
-                  </div>
-                )}
               </div>
             </form>
           ) : (
@@ -231,8 +286,17 @@ export default function Signup() {
                 <button
                   type="submit"
                   className="w-full px-4 py-3 inline-flex items-center justify-center border align-middle select-none font-sans font-medium text-center duration-300 ease-in disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed focus:shadow-none text-sm  shadow-sm hover:shadow-md bg-stone-800 hover:bg-stone-700 relative bg-gradient-to-b from-stone-700 to-stone-800 border-stone-900 text-stone-50 rounded-lg hover:bg-gradient-to-b hover:from-stone-600 hover:to-stone-600 hover:border-stone-700 after:absolute after:inset-0 after:rounded-[inherit] after:box-shadow after:shadow-[inset_0_1px_0px_rgba(255,255,255,0.25),inset_0_-2px_0px_#00000059] after:pointer-events-none transition antialiased cursor-pointer"
+                  onClick={() => verifyOtpMutation.mutate()}
+                  disabled={isVerifyOtpPending}
                 >
-                  Verify OTP
+                  {isVerifyOtpPending ? (
+                    <span className="flex items-center gap-2">
+                      <LoaderCircle size={18} className="animate-spin" />
+                      Verifying...
+                    </span>
+                  ) : (
+                    "Verify OTP"
+                  )}
                 </button>
 
                 <p className="text-center text-sm mt-2">
@@ -247,6 +311,19 @@ export default function Signup() {
                     `Resend OTP in ${timer}s`
                   )}
                 </p>
+                {isVerifyOtpIsError &&
+                  isVerifyOtpError instanceof AxiosError && (
+                    <div
+                      role="alert"
+                      className="my-2 relative flex items-start w-full border p-2 rounded-none border-b-0 border-l-4 border-r-0 border-t-0 border-red-500 bg-red-500/10 font-medium text-red-500"
+                    >
+                      <CircleX />
+                      <div className="w-full text-sm font-sans leading-none m-1.5">
+                        {isVerifyOtpError.response?.data?.message ||
+                          isVerifyOtpError?.message}
+                      </div>
+                    </div>
+                  )}
               </div>
             </div>
           )}
