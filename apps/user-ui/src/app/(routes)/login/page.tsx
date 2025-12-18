@@ -4,18 +4,10 @@ import { useMutation } from "@tanstack/react-query";
 import GoogleButton from "apps/user-ui/src/shared/components/google-button";
 import { BASE_URL } from "apps/user-ui/src/shared/utils/base-url";
 import axios, { AxiosError } from "axios";
-import {
-  Check,
-  CircleCheck,
-  CircleX,
-  Eye,
-  EyeOff,
-  LoaderCircle,
-  LogIn,
-} from "lucide-react";
+import { Check, CircleX, Eye, EyeOff, LoaderCircle, LogIn } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 interface FormData {
