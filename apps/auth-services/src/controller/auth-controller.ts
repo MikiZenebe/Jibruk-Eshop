@@ -132,19 +132,19 @@ export const refreshToken = async (
   next: NextFunction
 ) => {
   try {
-    const refreshToken = req.cookies.refresh_token;
+    const refershToken = req.cookies.refershToken;
 
     if (!refreshToken) {
-      throw ValidationError("Unauthorized! No refresh token.");
+      return ValidationError("Unauthorized! No refresh token.");
     }
 
     const decoded = jwt.verify(
-      refreshToken,
+      refershToken,
       process.env.REFRESH_TOKEN_SECRET as string
     ) as { id: string; role: string };
 
     if (!decoded || !decoded.id || !decoded.role) {
-      return new JsonWebTokenError("Forbiden! Invalid refresh token.");
+      throw new JsonWebTokenError("Forbidden! Invalid refresh token.");
     }
 
     const user = await prisma.users.findUnique({ where: { id: decoded.id } });
@@ -159,16 +159,20 @@ export const refreshToken = async (
       { expiresIn: "15m" }
     );
 
-    setCookie(res, "access_token", newAccessToken);
-    return res.status(201).json({ success: true });
-  } catch (error) {}
+    setCookie(res, "accessToken", newAccessToken);
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    return res
+      .status(401)
+      .json({ message: "Invalid or expired refresh token." });
+  }
 };
 
 // Get logged in user
 export const getUser = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       user,
     });

@@ -2,18 +2,19 @@
 
 import { navItems } from "apps/user-ui/src/configs/constants";
 import { NavItemsTypes } from "apps/user-ui/src/configs/global";
+import useUser from "apps/user-ui/src/hooks/useUser";
 import {
   ChevronDown,
   ChevronRight,
   Heart,
-  Search,
   ShoppingCart,
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function HeaderBottom() {
+  const { user, isLoading } = useUser();
   const [openMenu, setOpenMenu] = useState(false);
   const [openSubMenu, setOpenSubMenu] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
@@ -130,18 +131,42 @@ export default function HeaderBottom() {
             <div className="flex items-center gap-6 py-3">
               <div className="flex items-center gap-5">
                 <div className="flex items-center gap-2">
-                  <Link
-                    href="#"
-                    className="border-2! w-[45px] h-[45px] flex items-center justify-center rounded-full border-gray-400!"
-                  >
-                    <UserRound size={25} className="text-gray-600" />
-                  </Link>
+                  {!isLoading && user ? (
+                    <>
+                      <Link
+                        href="/profile"
+                        className="border-2! w-[45px] h-[45px] flex items-center justify-center rounded-full border-gray-400!"
+                      >
+                        <UserRound size={25} className="text-gray-600" />
+                      </Link>
+                      <Link href="/login">
+                        <span className="block font-medium">Hello,</span>
+                        <span className=" font-semibold">
+                          {user?.name?.split(" ")[0]}
+                        </span>
+                      </Link>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href="/login"
+                        className="border-2! w-[45px] h-[45px] flex items-center justify-center rounded-full border-gray-400!"
+                      >
+                        <UserRound size={25} className="text-gray-600" />
+                      </Link>
+                      <Link href="/login">
+                        <span className="block font-medium">Hello,</span>
+                        <span className=" font-semibold">
+                          {isLoading ? (
+                            <span className="animate-pulse">...</span>
+                          ) : (
+                            "Sign In"
+                          )}
+                        </span>
+                      </Link>
+                    </div>
+                  )}
                 </div>
-
-                <Link href="/login">
-                  <span className="block font-medium">Hello,</span>
-                  <span className=" font-semibold">Sign In</span>
-                </Link>
               </div>
 
               <div className="flex items-center gap-5">

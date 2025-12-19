@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import React from "react";
 import { Heart, Search, ShoppingCart, UserRound } from "lucide-react";
 import HeaderBottom from "./HeaderBottom";
+import useUser from "apps/user-ui/src/hooks/useUser";
 
 export default function Header() {
+  const { user, isLoading, isError } = useUser();
+
   return (
     <div>
       <div className="rounded-lg overflow-hidden p-5 bg-white  mx-auto w-full px-40">
@@ -30,18 +35,42 @@ export default function Header() {
 
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-2">
-              <Link
-                href="#"
-                className="border-2! w-[45px] h-[45px] flex items-center justify-center rounded-full border-gray-400!"
-              >
-                <UserRound size={25} className="text-gray-600" />
-              </Link>
+              {!isLoading && user ? (
+                <>
+                  <Link
+                    href="/profile"
+                    className="border-2! w-[45px] h-[45px] flex items-center justify-center rounded-full border-gray-400!"
+                  >
+                    <UserRound size={25} className="text-gray-600" />
+                  </Link>
+                  <Link href="/login">
+                    <span className="block font-medium">Hello,</span>
+                    <span className=" font-semibold">
+                      {user?.name?.split(" ")[0]}
+                    </span>
+                  </Link>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/login"
+                    className="border-2! w-[45px] h-[45px] flex items-center justify-center rounded-full border-gray-400!"
+                  >
+                    <UserRound size={25} className="text-gray-600" />
+                  </Link>
+                  <Link href="/login">
+                    <span className="block font-medium">Hello,</span>
+                    <span className=" font-semibold">
+                      {isLoading ? (
+                        <span className="animate-pulse">...</span>
+                      ) : (
+                        "Sign In"
+                      )}
+                    </span>
+                  </Link>
+                </div>
+              )}
             </div>
-
-            <Link href="/login">
-              <span className="block font-medium">Hello,</span>
-              <span className=" font-semibold">Sign In</span>
-            </Link>
           </div>
 
           <div className="flex items-center gap-5">
