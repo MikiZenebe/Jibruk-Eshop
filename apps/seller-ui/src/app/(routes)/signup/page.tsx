@@ -1,18 +1,21 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { CircleX, Eye, EyeOff, LoaderCircle, LogIn } from "lucide-react";
+import { CirclePlus, CircleX, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios, { AxiosError } from "axios";
 import { BASE_URL } from "apps/user-ui/src/shared/utils/base-url";
+import { countries } from "apps/seller-ui/src/utils/countires";
 
 interface FormData {
   name: string;
   email: string;
   password: string;
+  phone_number: string;
+  country: string;
 }
 
 export default function Signup() {
@@ -124,7 +127,7 @@ export default function Signup() {
       <div className="relative w-full flex items-center justify-between md:w-[50%] my-10">
         <div className="absolute top-[25%] left-0 w-full md:-[90%] h-0.5 bg-gray-300 -z-10 flex justify-between items-center">
           {[
-            { step: 1, label: "Create Account" },
+            { step: 1, label: "Create Account", icon: <CirclePlus /> },
             { step: 2, label: "Setup Shop" },
             { step: 3, label: "Connect Bank" },
           ].map((item) => (
@@ -155,12 +158,6 @@ export default function Signup() {
               <h3 className="text-xl font-bold text-stone-800 mb-2 text-center font-poppins">
                 Create Account
               </h3>
-              <p className="text-stone-600 text-sm mb-4 text-center">
-                Already have an account? {""}
-                <Link href="/login" className="text-blue-500">
-                  Login
-                </Link>
-              </p>
 
               {!showOtp ? (
                 <form
@@ -227,6 +224,75 @@ export default function Signup() {
                   <div>
                     {" "}
                     <label className="block text-gray-700 mb-1 text-start font-semibold">
+                      Phone No
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="tel"
+                        placeholder="+251900000000"
+                        className="w-full text-sm text-black placeholder:text-stone-600/60 bg-white rounded-lg py-3  px-4 outline-1 outline-gray-300 transition-all duration-200 ease-out focus-visible:border-gray-600 focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:shadow-sm hover:border-stone-300 disabled:opacity-50 disabled:pointer-events-none aria-disabled:cursor-not-allowed"
+                        {...register("phone_number", {
+                          required: "Phone Number is required",
+                          pattern: {
+                            value: /^\+?[1-9]\d{1,14}$/,
+                            message: "Invalid phone number format",
+                          },
+                          minLength: {
+                            value: 10,
+                            message: "Phone number can't be exceed 15 digits",
+                          },
+                        })}
+                      />
+                    </div>
+                    {errors.phone_number && (
+                      <div
+                        role="alert"
+                        className="my-2 relative flex items-start w-full border p-2 rounded-none border-b-0 border-l-4 border-r-0 border-t-0 border-red-500 bg-red-500/10 font-medium text-red-500"
+                      >
+                        <CircleX />
+                        <div className="w-full text-sm font-sans leading-none m-1.5">
+                          {String(errors.phone_number.message)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    {" "}
+                    <label className="block text-gray-700 mb-1 text-start font-semibold">
+                      Country
+                    </label>
+                    <div>
+                      <select
+                        className="w-full text-sm text-black placeholder:text-stone-600/60 bg-white rounded-lg py-3  px-4 outline-1 outline-gray-300 transition-all duration-200 ease-out focus-visible:border-gray-600 focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:shadow-sm hover:border-stone-300 disabled:opacity-50 disabled:pointer-events-none aria-disabled:cursor-not-allowed cursor-pointer"
+                        {...register("country", {
+                          required: "Country is required",
+                        })}
+                      >
+                        <option value="">Select your country</option>
+                        {countries.map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {country.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {errors.country && (
+                      <div
+                        role="alert"
+                        className="my-2 relative flex items-start w-full border p-2 rounded-none border-b-0 border-l-4 border-r-0 border-t-0 border-red-500 bg-red-500/10 font-medium text-red-500"
+                      >
+                        <CircleX />
+                        <div className="w-full text-sm font-sans leading-none m-1.5">
+                          {String(errors.country.message)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    {" "}
+                    <label className="block text-gray-700 mb-1 text-start font-semibold">
                       Password
                     </label>
                     <div className="relative">
@@ -283,7 +349,28 @@ export default function Signup() {
                         "Signup"
                       )}
                     </button>
+
+                    {signupMutation.isError &&
+                      signupMutation.error instanceof AxiosError && (
+                        <div
+                          role="alert"
+                          className="my-2 relative flex items-start w-full border p-2 rounded-none border-b-0 border-l-4 border-r-0 border-t-0 border-red-500 bg-red-500/10 font-medium text-red-500"
+                        >
+                          <CircleX />
+                          <div className="w-full text-sm font-sans leading-none m-1.5">
+                            {signupMutation.error.response?.data?.message ||
+                              signupMutation?.error.message}
+                          </div>
+                        </div>
+                      )}
                   </div>
+
+                  <p className="text-stone-600 text-sm font-semibold text-center">
+                    Already have an account? {""}
+                    <Link href="/login" className="text-blue-500">
+                      Login
+                    </Link>
+                  </p>
                 </form>
               ) : (
                 <div>
