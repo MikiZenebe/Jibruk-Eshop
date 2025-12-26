@@ -127,7 +127,19 @@ export default function Signup() {
     }
   };
 
-  const connectStripe = () => {};
+  const connectStripe = async () => {
+    try {
+      const res = await axios.post(`${BASE_URL}/api/create-stripe-link`, {
+        sellerId,
+      });
+
+      if (res?.data?.url) {
+        window.location.href = res.data.url;
+      }
+    } catch (error) {
+      console.log("Stripe Connection Error:", error);
+    }
+  };
 
   return (
     <div className="w-full flex flex-col items-center pt-10 min-h-screen">
