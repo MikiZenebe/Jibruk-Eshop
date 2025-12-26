@@ -260,7 +260,7 @@ export const registerSeller = async (
 
     await checkOtpRestriction(email, next);
     await trackOtpRequest(email, next);
-    await sendOtp(name, email, "seller-activation");
+    await sendOtp(name, email, "seller-activation-mail");
 
     res
       .status(200)

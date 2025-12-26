@@ -9,6 +9,9 @@ import { useForm } from "react-hook-form";
 import axios, { AxiosError } from "axios";
 import { BASE_URL } from "apps/user-ui/src/shared/utils/base-url";
 import { countries } from "apps/seller-ui/src/utils/countires";
+import CreateShop from "apps/seller-ui/src/shared/modules/auth/create-shop";
+import StripeLogo from "../../../assets/stripe.svg";
+import Image from "next/image";
 
 interface FormData {
   name: string;
@@ -19,13 +22,14 @@ interface FormData {
 }
 
 export default function Signup() {
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(3);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [canResend, setCanResend] = useState(true);
   const [timer, setTimer] = useState(60);
   const [otp, setOtp] = useState(["", "", "", ""]);
-  const [userData, setUserData] = useState<FormData | null>(null);
+  const [sellerData, setSellerData] = useState<FormData | null>(null);
+  const [sellerId, setSellerId] = useState<string>("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const router = useRouter();
@@ -52,7 +56,7 @@ export default function Signup() {
   const signupMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const response = await axios.post(
-        `${BASE_URL}/api/user-registration`,
+        `${BASE_URL}/api/seller-registration`,
         data
       );
 
@@ -60,7 +64,7 @@ export default function Signup() {
     },
 
     onSuccess: (_, formData) => {
-      setUserData(formData);
+      setSellerData(formData);
       setShowOtp(true);
       setCanResend(false);
       setTimer(60);
@@ -70,17 +74,18 @@ export default function Signup() {
 
   const verifyOtpMutation = useMutation({
     mutationFn: async () => {
-      if (!userData) return;
-      const response = await axios.post(`${BASE_URL}/api/verify-user`, {
-        ...userData,
+      if (!sellerData) return;
+      const response = await axios.post(`${BASE_URL}/api/verify-seller`, {
+        ...sellerData,
         otp: otp.join(""),
       });
 
       return response.data;
     },
 
-    onSuccess: () => {
-      router.push("/login");
+    onSuccess: (data) => {
+      setSellerId(data?.seller?.id ?? "");
+      setActiveStep(2);
     },
   });
 
@@ -117,10 +122,12 @@ export default function Signup() {
   };
 
   const resendOtp = () => {
-    if (userData) {
-      signupMutation.mutate(userData);
+    if (sellerData) {
+      signupMutation.mutate(sellerData);
     }
   };
+
+  const connectStripe = () => {};
 
   return (
     <div className="w-full flex flex-col items-center pt-10 min-h-screen">
@@ -442,6 +449,25 @@ export default function Signup() {
               )}
             </div>
           </>
+        )}
+
+        {activeStep === 2 && (
+          <CreateShop sellerId={sellerId} setActiveStep={setActiveStep} />
+        )}
+
+        {activeStep === 3 && (
+          <div className="text-center">
+            <h3 className="text-2xl font-semibold">Withdraw Method</h3>
+            <br />
+            <button
+              type="submit"
+              className="w-full px-4 py-3 inline-flex items-center justify-center border align-middle select-none font-sans font-medium text-center duration-300 ease-in disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed focus:shadow-none text-sm  shadow-sm hover:shadow-md bg-stone-800 hover:bg-stone-700 relative bg-gradient-to-b from-stone-700 to-stone-800 border-stone-900 text-stone-50 rounded-lg hover:bg-gradient-to-b hover:from-stone-600 hover:to-stone-600 hover:border-stone-700 after:absolute after:inset-0 after:rounded-[inherit] after:box-shadow after:shadow-[inset_0_1px_0px_rgba(255,255,255,0.25),inset_0_-2px_0px_#00000059] after:pointer-events-none transition antialiased cursor-pointer gap-2"
+              onClick={connectStripe}
+            >
+              <span className="text-md">Connect Stripe</span>
+              <Image src={StripeLogo} width={20} height={20} alt="" />
+            </button>
+          </div>
         )}
       </div>
     </div>
