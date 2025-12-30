@@ -21,8 +21,18 @@ interface FormData {
   country: string;
 }
 
+interface VerifySellerResponse {
+  succes: boolean;
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 export default function Signup() {
-  const [activeStep, setActiveStep] = useState(3);
+  const [activeStep, setActiveStep] = useState(1);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [canResend, setCanResend] = useState(true);
@@ -72,7 +82,7 @@ export default function Signup() {
     },
   });
 
-  const verifyOtpMutation = useMutation({
+  const verifyOtpMutation = useMutation<VerifySellerResponse>({
     mutationFn: async () => {
       if (!sellerData) return;
       const response = await axios.post(`${BASE_URL}/api/verify-seller`, {
@@ -83,8 +93,8 @@ export default function Signup() {
       return response.data;
     },
 
-    onSuccess: (data) => {
-      setSellerId(data?.seller?.id ?? "");
+    onSuccess: (response) => {
+      setSellerId(response.data.id);
       setActiveStep(2);
     },
   });

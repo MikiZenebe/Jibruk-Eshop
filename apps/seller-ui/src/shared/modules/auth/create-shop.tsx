@@ -181,7 +181,7 @@ export default function CreateShop({
                 className="w-full text-sm text-black placeholder:text-stone-600/60 bg-white rounded-lg py-3  px-4 outline-1 outline-gray-300 transition-all duration-200 ease-out focus-visible:border-gray-600 focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:shadow-sm hover:border-stone-300 disabled:opacity-50 disabled:pointer-events-none aria-disabled:cursor-not-allowed"
                 {...register("website", {
                   pattern: {
-                    value: /^(https?:\/\/)?([\w\d-]+\.)+\{2,}(\/.*)?$/,
+                    value: /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/.*)?$/,
                     message: "Enter a valid URL",
                   },
                 })}
